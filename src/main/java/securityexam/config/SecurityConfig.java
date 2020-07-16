@@ -1,13 +1,17 @@
 package securityexam.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import securityexam.service.security.CustomUserDetailService;
 
 //Spring Security 설정파일
 //스프링 시큐리티를 이용해 로그인/로그아웃/인증/인가 등을 처리하기 위한 설정 파일
@@ -18,6 +22,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
+	@Autowired
+	CustomUserDetailService customUserDetailService;
 	
 	//   /webjars/** 경로에 대한 요청은 인증/인가 처리하지 않도록 무시 (** = 모든경로)
 	//아래 메소드는 인증/인가가 필요 없는 경로를 설정할 필요가 있을 때 오버라이딩
@@ -26,8 +32,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		web.ignoring().antMatchers("/webjars/**");
 	}
 	
+	@Override
+	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
+		auth.userDetailsService(customUserDetailService);
+	}
+	
 	//아래 메소드는 인증/인가에 대한 설정
-	//  /, /main에 대한 요청은 누구나 할 수 있지만, 
+	//  antMatchers 메소드에  uri를 넣고 permitAll시켜주면 /, /main ... 등등에 대한 요청은 누구나 할 수 있지만, 
 	//  그 외의 요청은 모두 인증 후 접근 가능
 	/*
 	 http.csrf().disable()는 csrf()라는 기능을 끄라는 설정입니다.
@@ -40,8 +51,22 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		http
 			.csrf().disable()
 			.authorizeRequests()
-			.antMatchers("/", "/main").permitAll()
-			.anyRequest().authenticated();
+			.antMatchers("/", "/main","/members/loginerror","/members/joinform","/members/join","/members/welcome").permitAll()
+			.antMatchers("/securepage","/members/**").hasRole("USER")
+			.anyRequest().authenticated()
+			.and()
+				.formLogin()
+				.loginPage("/members/loginform")
+				.usernameParameter("userId")
+				.passwordParameter("password")
+				.loginProcessingUrl("/authenticate")
+				.failureForwardUrl("/members/loginerror?login_error=1")
+				.defaultSuccessUrl("/",true)
+				.permitAll()
+			.and()
+				.logout()
+				.logoutUrl("/logout")
+				.logoutSuccessUrl("/");
 	}
 	
 	//패스워드 인코더를 빈으로 등록.

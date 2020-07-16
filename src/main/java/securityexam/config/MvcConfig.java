@@ -26,7 +26,7 @@ public class MvcConfig implements WebMvcConfigurer{
 	//Spring MVC에서 jsp view가 위치하는 경로를 설정
 	@Override
 	public void configureViewResolvers(ViewResolverRegistry registry) {
-		registry.jsp("/WEB-INF/view/", ".jsp");
+		registry.jsp("/WEB-INF/views/", ".jsp");
 	}
 	
 	// '/'로 요청이 오면 '/main'으로 리다이렉트
