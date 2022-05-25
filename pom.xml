@@ -15,7 +15,7 @@
 		<failOnMissingWebXml>false</failOnMissingWebXml>
 		<!-- spring 5.2.3이 나오는 시점에 spring security는 5.2.2가 최신버전이라서 5.2.2.RELEASE로 
 			설정함 -->
-		<spring.version>5.2.2.RELEASE</spring.version>
+		<spring.version>5.5.7</spring.version>
 	</properties>
 
 	<dependencies>
